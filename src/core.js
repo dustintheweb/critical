@@ -69,7 +69,7 @@ function callPenthouse(document, options) {
     debug('Call penthouse with:', {...config, width, height});
     return async () => {
       // Resolves some weird bug in penthouse when multiple dimensions.
-      // Needs further investigation 
+      // Needs further investigation
       await delay(10);
       return penthouse({...config, width, height});
     };
