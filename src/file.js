@@ -101,7 +101,7 @@ function joinPath(base, part) {
     return url.resolve(base, part);
   }
 
-  return path.join(base, part.replace(/\?.*$/, ''));
+  return normalizePath(path.join(base, part.replace(/\?.*$/, '')));
 }
 
 /**
@@ -368,7 +368,7 @@ function getRemoteStylesheetPath(fileObj, documentObj, filename) {
   const {hostname: docHost, port: docPort} = documentObj || {};
 
   if (filename) {
-    pathname = path.join(path.dirname(pathname), path.basename(filename));
+    pathname = joinPath(path.dirname(pathname), path.basename(filename));
     fileObj.pathname = pathname;
   }
 
@@ -397,7 +397,7 @@ async function getStylesheetPath(document, file, options = {}) {
   // Generate path relative to document if stylesheet is referenced relative
   //
   if (isRelative(file.path) && document.path) {
-    return path.join(path.dirname(document.path), file.path);
+    return joinPath(path.dirname(document.path), file.path);
   }
 
   if (base && path.resolve(file.path).includes(path.resolve(base))) {
@@ -413,7 +413,7 @@ async function getStylesheetPath(document, file, options = {}) {
   });
 
   if (stylesheet && isRelative(stylesheet) && document.path) {
-    return path.join(path.dirname(document.path), stylesheet);
+    return joinPath(path.dirname(document.path), stylesheet);
   }
   if (stylesheet && isRemote(stylesheet)) {
     return getRemoteStylesheetPath(url.parse(stylesheet), document.urlObj);
@@ -425,7 +425,7 @@ async function getStylesheetPath(document, file, options = {}) {
   // Try to find stylesheet path based on document link tags
   const [unsafestylesheet] = document.stylesheets.sort(a => (isRemote(a) ? 1 : -1));
   if (unsafestylesheet && isRelative(unsafestylesheet) && document.path) {
-    return path.join(path.dirname(document.path), path.join(path.dirname(unsafestylesheet), path.basename(file.path)));
+    return joinPath(path.dirname(document.path), joinPath(path.dirname(unsafestylesheet), path.basename(file.path)));
   }
   if (unsafestylesheet && isRemote(unsafestylesheet)) {
     return getRemoteStylesheetPath(url.parse(unsafestylesheet), document.urlObj, path.basename(file.path));
@@ -436,7 +436,7 @@ async function getStylesheetPath(document, file, options = {}) {
 
   process.stderr.write(BASE_WARNING);
   if (document.path && file.path) {
-    return path.join(path.dirname(document.path), path.basename(file.path));
+    return joinPath(path.dirname(document.path), path.basename(file.path));
   }
 
   return '';
@@ -684,7 +684,7 @@ async function getDocument(filepath, options = {}) {
   const {rebase = {}, base} = options;
 
   if (!isVinyl(filepath) && !isRemote(filepath) && !fs.existsSync(filepath) && base) {
-    filepath = path.join(base, filepath);
+    filepath = joinPath(base, filepath);
   }
 
   const document = await vinylize({filepath}, options);
